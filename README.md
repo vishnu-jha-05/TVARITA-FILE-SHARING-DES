@@ -289,8 +289,10 @@ The application automatically measures and displays:
 
 ## 👨‍💻 Authors
 
-**Vishnu Jha
-  Aniket**
+Vishnu Jha
+  
+
+Aniket
 
 Project: Secure File Sharing System using DES and Diffie-Hellman
 Course: Cryptography and Network Security (CNS) — Final Project
