@@ -1,0 +1,153 @@
+# Project Report: TVARITA Secure File Sharing
+
+## Abstract
+This project, titled "TVARITA: Secure Peer-to-Peer File Sharing System," presents a robust local network application designed to facilitate secure file transfers across devices without reliance on third-party cloud infrastructure. To guarantee data confidentiality during transit, the system implements a bespoke, from-scratch Data Encryption Standard (DES) algorithm integrated with a Diffie-Hellman (DH) key exchange protocol. By generating mathematical primes and exchanging public keys over TCP sockets, the application securely derives an 8-byte shared secret key used for DES encryption. A centralized Flask-based backend serves a responsive web interface, allowing seamless cross-platform usage between mobile devices and personal computers. The resulting system effectively demonstrates the foundational principles of symmetric block ciphers and asymmetric key exchange within an accessible, modern peer-to-peer network architecture.
+
+---
+
+## Contents
+1. Introduction
+2. Problem Statement
+3. Methodology
+4. Implementation
+5. Results and Interpretation
+6. Conclusion
+7. References
+
+---
+
+## 1. Introduction
+In today's interconnected digital landscape, transferring files securely between local devices often involves uploading sensitive data to third-party cloud platforms or utilizing physical cables. TVARITA is a web-based, secure peer-to-peer (P2P) file-sharing application designed to solve this issue. Operating entirely over a Local Area Network (LAN), it allows users to transfer files cross-platform (e.g., PC to Mobile) using a simple browser interface. 
+
+The core of TVARITA is its custom cryptographic engine, built entirely in pure Python for educational and security transparency. It utilizes the Diffie-Hellman protocol for secure key exchange over an insecure Wi-Fi channel, ensuring that the DES symmetric key is never transmitted in plain text. Once the key is derived, the application encrypts the target file using the Data Encryption Standard (DES) cipher, transmitting the ciphertext via TCP sockets before decrypting it at the destination.
+
+---
+
+## 2. Problem Statement
+
+**I. Problem statement with identification of objects to be considered for implementation.**
+The primary problem addressed by this project is the lack of a secure, lightweight, and truly local file-sharing mechanism that guarantees data confidentiality without exposing the data to external internet servers. The objects considered for implementation include:
+*   A raw TCP socket networking layer capable of handling peer-to-peer connections.
+*   A cryptographic engine implementing the DES block cipher from scratch to process 64-bit blocks of file data.
+*   A Diffie-Hellman mathematical module to compute large prime-based shared secrets securely.
+*   A web-based graphical user interface (GUI) served via Flask to handle the "Sender" and "Receiver" workflows easily on any device.
+
+**II. Highlighting the constraints (if any).**
+*   **Network Constraint:** The devices (PC and Mobile) must be connected to the same Local Area Network (LAN) to communicate.
+*   **Performance Constraint:** Because the DES algorithm was written in pure Python (an interpreted language) to understand its inner workings manually, encryption of large files is computationally heavy and slower compared to hardware-accelerated libraries.
+*   **Security Constraint:** DES uses a 56-bit key which is computationally feasible to brute-force with modern hardware; therefore, it is used here for academic demonstration of block ciphers rather than enterprise-level security.
+
+---
+
+## 3. Methodology
+
+**I. Block diagram of cryptosystem used in project**
+*(Note: You can draw this out in Microsoft Word using SmartArt, or screenshot the textual flow below)*
+1. **Sender/Receiver Devices** connect to --> **Flask Web Server**
+2. **Flask Server** triggers --> **TCP Sockets (Host & Client Threads)**
+3. **TCP Sockets** execute --> **Diffie-Hellman Key Exchange**
+4. **Key Exchange** derives --> **8-Byte Shared Secret Key**
+5. **Sender** passes File & Key to --> **DES Encryption Engine**
+6. **Encrypted Data** travels over TCP to --> **DES Decryption Engine**
+7. **Decrypted File** is saved to --> **Local Device Storage**
+
+**II. Algorithm or Pseudocode for implementation of the project.**
+```text
+START
+    Host (Sender) starts listening on Port 5555.
+    Client (Receiver) connects to Host IP on Port 5555.
+    
+    // Key Exchange Phase
+    Host generates DH Private Key (a) and Public Key (A = g^a mod p).
+    Client generates DH Private Key (b) and Public Key (B = g^b mod p).
+    Host sends A to Client.
+    Client sends B to Host.
+    Host computes Shared Secret = B^a mod p.
+    Client computes Shared Secret = A^b mod p.
+    Both hash the Shared Secret (SHA-256) and extract the first 8 bytes as the DES Key.
+    
+    // File Transfer Phase
+    Host pads file data using PKCS5 to ensure it is a multiple of 64 bits.
+    Host encrypts file in 64-bit blocks using DES(File_Block, DES_Key).
+    Host sends Encrypted Data over TCP socket to Client.
+    Client receives Encrypted Data.
+    Client decrypts data in 64-bit blocks using DES_Decrypt(File_Block, DES_Key).
+    Client removes PKCS5 padding.
+    Client saves the decrypted file to local storage.
+END
+```
+
+**III. Tools used for implementation of algorithm/pseudocode.**
+*   **Language:** Python 3.x
+*   **Web Framework:** Flask (for HTTP routing and serving the UI)
+*   **Networking:** Python `socket` and `threading` libraries (for asynchronous TCP transfers)
+*   **Cryptography:** Python math operations for Diffie-Hellman logic. DES was written completely from scratch using bit-shifting arrays. `hashlib` was used solely to condense the DH secret into exactly 8-bytes.
+*   **Frontend:** HTML, CSS, and JavaScript.
+
+---
+
+## 4. Implementation
+**Python code respective to implementation of cryptosystem.**
+
+*(Note: Paste this snippet of your core logic in your Word doc)*
+```python
+# Diffie-Hellman Key Exchange Logic
+def compute_shared_secret(self, other_public_key):
+    """ Formula: shared_secret = other_public_key ^ private_key mod prime """
+    shared_secret = pow(other_public_key, self.private_key, self.prime)
+    return shared_secret
+
+def derive_des_key(self, other_public_key):
+    """ Derives an 8-byte DES key from the DH shared secret """
+    shared_secret = self.compute_shared_secret(other_public_key)
+    secret_bytes = shared_secret.to_bytes((shared_secret.bit_length() + 7) // 8, 'big')
+    hash_digest = hashlib.sha256(secret_bytes).digest()
+    return hash_digest[:8] # Return exactly 8 bytes for DES
+
+# TCP Network Execution
+def send_file(self, filepath, key, encrypt_func):
+    """ Encrypts and transmits file over TCP Socket """
+    file_size = os.path.getsize(filepath)
+    with open(filepath, 'rb') as f:
+        data = f.read()
+    
+    # Send through the custom DES encryption engine
+    encrypted_data = encrypt_func(data, key)
+    
+    # Send over the socket
+    send_message(self.client_socket, MSG_FILE_DATA, encrypted_data)
+    send_message(self.client_socket, MSG_FILE_COMPLETE, b"")
+```
+
+---
+
+## 5. Results & Interpretation
+*(Note for your Word Document: Copy and paste the text below, and insert your actual screenshots where the brackets indicate)*
+
+The TVARITA application successfully compiled and ran on the local network. Upon execution, the Flask development server hosted the web application, making it accessible to both the host computer and mobile devices via the LAN IP.
+
+[INSERT SCREENSHOT 1: The 'Send Files' Web Dashboard showing the user's IP Address]
+*Figure 1: The primary web interface allowing the sender to select a file for encryption.*
+
+During a file transfer, the Transfer Log successfully demonstrated the Diffie-Hellman key exchange occurring in real-time. Both the sender and receiver independently derived the exact same 8-byte hex key without transmitting the private keys over the socket. 
+
+[INSERT SCREENSHOT 2: The Transfer Log showing the "Key exchange complete" and the "DES Key" printout]
+*Figure 2: The system logs displaying the successful mathematical derivation of the shared secret DES key.*
+
+Following the key exchange, the Data Encryption Standard (DES) algorithm successfully padded the file, encrypted it, and transmitted it to the receiving thread. The receiver successfully decrypted the file and provided a seamless HTTP download button to save the file to the local device.
+
+[INSERT SCREENSHOT 3: The Green 'File Received!' box with the Download to Device button]
+*Figure 3: Final successful decryption and file delivery to the end user.*
+
+---
+
+## 6. Conclusion
+The TVARITA Secure File Sharing project successfully demonstrates the integration of complex cryptographic algorithms within a functional, cross-platform networking application. By implementing both the Diffie-Hellman key exchange protocol and the Data Encryption Standard (DES) algorithm entirely from scratch, a deep understanding of block ciphers, Feistel networks, and asymmetric mathematics was achieved. While the use of pure Python imposes constraints on processing speed for large files, the centralized Flask-to-Socket architecture successfully eliminates the need for third-party cloud servers, ensuring that files remain strictly confidential and confined to the local network. This project proves that classical cryptographic concepts can be effectively bridged with modern, responsive web interfaces to create seamless secure communication tools.
+
+---
+
+## References
+[1] W. Stallings, "Cryptography and Network Security: Principles and Practice," 8th Edition, Pearson, 2020.
+[2] RFC 2409, "The Internet Key Exchange (IKE)," OAKLEY Group 2 (1024-bit Modular Exponential), IETF, 1998.
+[3] National Bureau of Standards, "Data Encryption Standard (DES)," FIPS PUB 46, 1977.
+[4] M. Grinberg, "Flask Web Development: Developing Web Applications with Python," 2nd Edition, O'Reilly Media, 2018.

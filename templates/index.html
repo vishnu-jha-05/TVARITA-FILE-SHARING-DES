@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TVARITA — Secure File Transfer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Manrope',sans-serif; background:#F0F2F7; color:#181C20; min-height:100vh; }
+
+/* NAV */
+.nav { background:#fff; display:flex; align-items:center; padding:0 24px; height:52px;
+       border-bottom:1px solid #E0E3E8; }
+.logo { font-size:15px; font-weight:800; color:#0066FF; margin-right:32px; }
+.nav-tabs { display:flex; gap:4px; }
+.tab { padding:8px 16px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:500;
+       color:#9CA3AF; transition:all .2s; border:none; background:none; }
+.tab:hover { background:#F0F2F7; }
+.tab.active { background:#EBF0FF; color:#0066FF; font-weight:700; }
+
+/* LAYOUT */
+.container { max-width:520px; margin:32px auto; padding:0 20px; }
+
+/* CARD */
+.card { background:#fff; border-radius:16px; border:1px solid #E0E3E8; padding:32px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+.card h1 { font-size:26px; font-weight:800; margin-bottom:6px; letter-spacing:-0.02em; }
+.card .subtitle { color:#6B7280; font-size:14px; margin-bottom:24px; }
+
+/* FORM */
+.field-label { font-size:11px; font-weight:700; color:#9CA3AF; text-transform:uppercase;
+               letter-spacing:.05em; margin-bottom:6px; }
+.input { width:100%; padding:12px 16px; border:1px solid #E0E3E8; border-radius:10px;
+         font-size:14px; font-family:inherit; background:#F9FAFB; outline:none;
+         transition:all .2s ease; }
+.input:focus { border-color:#0066FF; background:#fff; box-shadow: 0 0 0 3px rgba(0,102,255,0.15); }
+.field { margin-bottom:18px; }
+
+/* IP BOX */
+.ip-box { background:linear-gradient(135deg, #EBF0FF 0%, #F5F7FF 100%); border-radius:10px; padding:16px; margin-bottom:20px; border:1px solid #D6E4FF; }
+.ip-box .ip { font-weight:800; color:#0066FF; font-size:14px; letter-spacing:0.5px; }
+.ip-box .ip-hint { color:#6B7280; font-size:12px; margin-top:4px; }
+
+/* DROP ZONE */
+.drop-zone { border:2px dashed #D1D5DB; border-radius:12px; padding:36px 20px; text-align:center;
+             cursor:pointer; transition:all .2s ease; margin-bottom:20px; background:#F9FAFB; }
+.drop-zone:hover { border-color:#0066FF; background:#F5F7FF; transform:translateY(-1px); }
+.drop-zone .icon { font-size:48px; margin-bottom:8px; opacity:0.8; transition:all .2s; }
+.drop-zone:hover .icon { opacity:1; transform:scale(1.05); }
+.drop-zone .dz-text { color:#4B5563; font-size:14px; font-weight:600; margin-bottom:4px; }
+.drop-zone .dz-sub { color:#9CA3AF; font-size:12px; }
+.drop-zone.has-file { border-color:#10B981; background:#F0FDF4; }
+.drop-zone.has-file .icon { color:#10B981; }
+
+/* BUTTON */
+.btn-primary { width:100%; padding:16px; border:none; border-radius:12px; background:linear-gradient(to right, #0066FF, #0050CB);
+               color:#fff; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit;
+               transition:all .2s; box-shadow: 0 4px 14px 0 rgba(0,102,255,0.39); letter-spacing:0.3px; }
+.btn-primary:hover { transform:translateY(-1px); box-shadow: 0 6px 20px rgba(0,102,255,0.45); }
+.btn-primary:active { transform:translateY(1px); box-shadow: 0 2px 10px rgba(0,102,255,0.3); }
+.btn-primary:disabled { background:#D1D5DB; cursor:not-allowed; box-shadow:none; transform:none; }
+
+.btn-modern { background:#10B981; color:#fff; padding:12px 24px; border-radius:8px; font-weight:700; font-size:14px; transition:all .2s; box-shadow: 0 4px 14px rgba(16,185,129,0.3); border:none; cursor:pointer; }
+.btn-modern:hover { background:#059669; transform:translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.4); }
+
+
+/* SAVE ROW */
+.save-row { display:flex; gap:8px; align-items:center; }
+.save-path { flex:1; padding:8px 12px; background:#F9FAFB; border:1px solid #D1D5DB;
+             border-radius:6px; font-size:12px; color:#6B7280; overflow:hidden;
+             text-overflow:ellipsis; white-space:nowrap; }
+.btn-sm { padding:8px 14px; border:1px solid #D1D5DB; border-radius:6px; background:#F9FAFB;
+          color:#0066FF; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; }
+.btn-sm:hover { background:#EBF0FF; }
+
+/* ICON BOX */
+.icon-box { background:#EBF0FF; border-radius:10px; padding:20px; text-align:center;
+            margin:16px 0; }
+.icon-box .big-icon { font-size:48px; color:#0066FF; }
+
+/* FOOTER */
+.footer { text-align:center; color:#9CA3AF; font-size:11px; margin-top:16px; }
+
+/* LOG PANEL */
+.log-container { max-width:720px; margin:24px auto; padding:0 20px; }
+.log-header h1 { font-size:22px; font-weight:800; }
+.log-header .sub { color:#6B7280; font-size:13px; margin-bottom:14px; }
+.metrics-bar { background:#EBF0FF; border-radius:8px; padding:12px 16px; margin-bottom:10px;
+               color:#0066FF; font-size:12px; font-weight:600; min-height:20px; }
+.progress-bar { height:6px; background:#E0E3E8; border-radius:3px; overflow:hidden;
+                margin-bottom:4px; }
+.progress-fill { height:100%; background:#0066FF; border-radius:3px; transition:width .3s; }
+.progress-pct { text-align:right; font-size:11px; color:#9CA3AF; margin-bottom:8px; }
+.log-box { background:#fff; border:1px solid #E0E3E8; border-radius:8px; padding:14px;
+           font-family:'Courier New',monospace; font-size:12px; line-height:1.6;
+           max-height:320px; overflow-y:auto; }
+.log-line { margin-bottom:2px; }
+.log-line .ts { color:#9CA3AF; }
+.log-success { color:#10B981; }
+.log-error { color:#EF4444; }
+.log-accent { color:#0066FF; }
+.log-key { color:#7C3AED; }
+.log-info { color:#6B7280; }
+
+/* FILE INPUT (hidden) */
+.file-input { display:none; }
+
+/* RESULT */
+.result-box { background:#F0FDF4; border:1px solid #10B981; border-radius:10px;
+              padding:20px; text-align:center; margin-top:16px; }
+.result-box h2 { color:#10B981; font-size:18px; margin-bottom:8px; }
+.result-box p { color:#6B7280; font-size:13px; }
+
+/* HISTORY ITEM */
+.history-item { background: #fff; border: 1px solid #E0E3E8; border-radius: 8px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.hi-info { display: flex; flex-direction: column; }
+.hi-title { font-weight: 700; font-size: 13px; color: #181C20; margin-bottom: 4px; word-break: break-all; }
+.hi-sub { font-size: 11px; color: #6B7280; }
+.hi-badge { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 4px; text-transform: uppercase; }
+.hi-badge.Sent { background: #EBF0FF; color: #0066FF; }
+.hi-badge.Received { background: #F0FDF4; color: #10B981; }
+
+/* Hide panels */
+.panel { display:none; }
+.panel.active { display:block; }
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 600px) {
+  .nav { padding: 0 12px; }
+  .logo { font-size: 14px; margin-right: 16px; }
+  .nav-tabs { 
+    overflow-x: auto; 
+    white-space: nowrap; 
+    -webkit-overflow-scrolling: touch; 
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .tab { padding: 8px 10px; font-size: 12px; }
+  .container { margin: 16px auto; padding: 0 16px; }
+  .card { padding: 20px; }
+  .card h1 { font-size: 20px; }
+  .drop-zone { padding: 20px; }
+  .btn-primary { padding: 12px; font-size: 14px; }
+  .log-container { margin: 16px auto; padding: 0 12px; }
+  .save-row { flex-direction: column; align-items: stretch; }
+  .btn-sm { width: 100%; text-align: center; margin-top: 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="logo">◈ TVARITA</div>
+  <div class="nav-tabs">
+    <button class="tab active" onclick="showTab('send')" id="tab-send">↗ Transfer</button>
+    <button class="tab" onclick="showTab('recv')" id="tab-recv">↙ Receive</button>
+    <button class="tab" onclick="showTab('log')" id="tab-log">☰ Log</button>
+    <button class="tab" onclick="showTab('history')" id="tab-history">🕒 History</button>
+  </div>
+</div>
+
+<!-- SEND PANEL -->
+<div class="panel active" id="panel-send">
+<div class="container">
+<div class="card">
+  <h1>Send files</h1>
+  <p class="subtitle">Securely transfer via DES + Diffie-Hellman encryption</p>
+
+  <!-- Port field hidden for simplicity -->
+  <input class="file-input" id="send-port" value="5555" type="hidden">
+
+  <div class="ip-box">
+    <div class="ip">🌐 Your IP: {{ LOCAL_IP }}</div>
+    <div class="ip-hint">Share this IP with the receiver</div>
+  </div>
+  <input type="file" class="file-input" id="file-input" onchange="fileSelected(this)">
+  <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <div class="icon" id="dz-icon">☁</div>
+    <div class="dz-text" id="dz-text">Click to choose a file</div>
+    <div class="dz-sub" id="dz-sub">Ready to move files</div>
+  </div>
+
+  <button class="btn-primary" id="send-btn" onclick="startSend()">Start transfer</button>
+  <div class="footer">◈ Secure Peer-to-Peer Transfer</div>
+</div>
+</div>
+</div>
+
+<!-- RECV PANEL -->
+<div class="panel" id="panel-recv">
+<div class="container">
+<div class="card">
+  <h1>Receive files</h1>
+  <p class="subtitle">Connect to a host and receive encrypted files</p>
+
+  <!-- Internal Port for logic -->
+  <input class="file-input" id="recv-port" value="5555" type="hidden">
+  
+  <div style="background:#F9FAFB; padding:20px; border-radius:10px; text-align:center; margin-bottom:20px; border:1px solid #E0E3E8;">
+    <p style="color:#4B5563; font-size:14px; font-weight:500; margin:0;">Waiting for sender to start...</p>
+    <p style="color:#9CA3AF; font-size:12px; margin-top:8px; margin-bottom:0;">Once the sender has started the transfer, click below to receive the file.</p>
+  </div>
+
+  <div class="icon-box"><div class="big-icon">☁↓</div></div>
+  <button class="btn-primary" id="recv-btn" onclick="startRecv()">Start Receive</button>
+  <div class="footer">◈ Secure Peer-to-Peer Transfer</div>
+</div>
+</div>
+</div>
+
+<!-- LOG PANEL -->
+<div class="panel" id="panel-log">
+<div class="log-container">
+  <div class="log-header">
+    <h1>Transfer Log</h1>
+    <p class="sub">Real-time activity and performance metrics</p>
+  </div>
+  <div class="metrics-bar" id="metrics">No transfer data yet</div>
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+  <div class="progress-pct" id="progress-pct">0%</div>
+  <div class="log-box" id="log-box"></div>
+  <div id="result-area"></div>
+</div>
+</div>
+
+<!-- HISTORY PANEL -->
+<div class="panel" id="panel-history">
+<div class="log-container">
+  <div class="log-header">
+    <h1>Session History</h1>
+    <p class="sub">Files transferred in the current session</p>
+  </div>
+  <div id="history-box">
+    <div style="text-align:center; padding: 20px; color: #9CA3AF; font-size: 13px;">No history yet.</div>
+  </div>
+</div>
+</div>
+
+<script>
+function showTab(t) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-'+t).classList.add('active');
+  document.getElementById('tab-'+t).classList.add('active');
+}
+
+let selectedFile = null;
+function fileSelected(input) {
+  if (input.files.length > 0) {
+    selectedFile = input.files[0];
+    document.getElementById('dz-icon').textContent = '✓';
+    document.getElementById('dz-text').textContent = '📄 ' + selectedFile.name;
+    document.getElementById('dz-sub').textContent = selectedFile.size.toLocaleString() + ' bytes';
+    document.getElementById('drop-zone').classList.add('has-file');
+  }
+}
+
+function startSend() {
+  if (!selectedFile) { alert('Please select a file first.'); return; }
+  const port = document.getElementById('send-port').value;
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true; btn.textContent = '⏳ Waiting for connection...';
+  showTab('log');
+  document.getElementById('result-area').innerHTML = '';
+  document.getElementById('log-box').innerHTML = '';
+  document.getElementById('metrics').textContent = 'Waiting for data...';
+  document.getElementById('progress').style.width = '0%';
+  document.getElementById('progress-pct').textContent = '0%';
+
+  const fd = new FormData();
+  fd.append('file', selectedFile);
+  fd.append('port', port);
+  fetch('/api/send', {method:'POST', body:fd});
+  startPolling('send');
+}
+
+function startRecv() {
+  const port = document.getElementById('recv-port').value;
+  const btn = document.getElementById('recv-btn');
+  btn.disabled = true; btn.textContent = '⏳ Connecting...';
+  showTab('log');
+  document.getElementById('result-area').innerHTML = '';
+  document.getElementById('log-box').innerHTML = '';
+  document.getElementById('metrics').textContent = 'Waiting for data...';
+  document.getElementById('progress').style.width = '0%';
+  document.getElementById('progress-pct').textContent = '0%';
+
+  // IP is hardcoded to 127.0.0.1 on the backend anyway
+  fetch('/api/recv', {method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({port})});
+  startPolling('recv');
+}
+
+async function scanNearby() {
+  const btn = document.getElementById('btn-scan');
+  const resDiv = document.getElementById('scan-results');
+  btn.disabled = true;
+  btn.textContent = 'Scanning...';
+  resDiv.style.display = 'block';
+  resDiv.innerHTML = '<div style="font-size:12px; color:#6B7280; text-align:center;">Looking for nearby devices...</div>';
+  
+  try {
+    const r = await fetch('/api/scan');
+    const d = await r.json();
+    if (d.ips && d.ips.length > 0) {
+      resDiv.innerHTML = '<div style="font-size:11px; font-weight:700; color:#9CA3AF; margin-bottom:8px;">FOUND DEVICES</div>' + 
+        d.ips.map(ip => `<div style="padding:8px; background:#fff; border:1px solid #E0E3E8; border-radius:6px; margin-bottom:4px; font-size:13px; font-weight:600; cursor:pointer;" onclick="selectIp('${ip}')">📱 ${ip}</div>`).join('');
+    } else {
+      resDiv.innerHTML = '<div style="font-size:12px; color:#6B7280; text-align:center;">No devices found on this network.</div>';
+    }
+  } catch (e) {
+    resDiv.innerHTML = '<div style="font-size:12px; color:#EF4444; text-align:center;">Scan failed.</div>';
+  }
+  
+  btn.disabled = false;
+  btn.textContent = 'Scan';
+}
+
+function selectIp(ip) {
+  document.getElementById('recv-ip').value = ip;
+  document.getElementById('scan-results').style.display = 'none';
+}
+
+let polling = null;
+function startPolling(mode) {
+  if (polling) clearInterval(polling);
+  polling = setInterval(async () => {
+    const r = await fetch('/api/status?mode=' + mode);
+    const d = await r.json();
+    // Progress
+    document.getElementById('progress').style.width = d.progress + '%';
+    document.getElementById('progress-pct').textContent = d.progress + '%';
+    if (d.progress >= 100) document.getElementById('progress').style.background = '#10B981';
+    // Metrics
+    if (d.metrics) document.getElementById('metrics').textContent = d.metrics;
+    // Logs
+    const box = document.getElementById('log-box');
+    box.innerHTML = d.logs.map(l =>
+      `<div class="log-line"><span class="ts">[${l.time}]</span> <span class="log-${l.tag}">${l.msg}</span></div>`
+    ).join('');
+    box.scrollTop = box.scrollHeight;
+    // Result
+    if (d.result) {
+      document.getElementById('result-area').innerHTML =
+        `<div class="result-box"><h2>✅ ${d.result.title}</h2><p>${d.result.detail}</p></div>`;
+      clearInterval(polling);
+      document.getElementById('send-btn').disabled = false;
+      document.getElementById('send-btn').textContent = 'Start transfer';
+      document.getElementById('recv-btn').disabled = false;
+      document.getElementById('recv-btn').textContent = 'Start Receive';
+    }
+    // History
+    if (d.history && d.history.length > 0) {
+      const hbox = document.getElementById('history-box');
+      hbox.innerHTML = d.history.map(h => 
+        `<div class="history-item">
+           <div class="hi-info">
+             <div class="hi-title">${h.filename}</div>
+             <div class="hi-sub">${h.size} • ${h.time}</div>
+           </div>
+           <div class="hi-badge ${h.type}">${h.type}</div>
+         </div>`
+      ).reverse().join('');
+    }
+  }, 500);
+}
+</script>
+</body>
+</html>

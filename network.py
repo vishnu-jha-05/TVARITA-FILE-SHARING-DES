@@ -32,7 +32,7 @@ MSG_ERROR         = 0xFF    # Error message
 # Network settings
 BUFFER_SIZE = 65536         # 64 KB chunks for file transfer
 DEFAULT_PORT = 5555
-SOCKET_TIMEOUT = 60         # seconds
+SOCKET_TIMEOUT = 600        # seconds (increased for slow pure-python DES)
 
 
 # ============================================================

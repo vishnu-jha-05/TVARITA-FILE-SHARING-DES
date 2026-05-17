@@ -27,7 +27,7 @@ A secure file sharing application built entirely from scratch in Python. This pr
 - **Diffie-Hellman Key Exchange** — Secure key agreement over an insecure channel using a 1024-bit safe prime (RFC 2409)
 - **No Cryptographic Libraries** — Every algorithm is implemented from first principles
 - **TCP Socket Communication** — Custom binary protocol for reliable file transfer
-- **Web GUI (CloudDrop)** — Clean, modern Flask-based browser interface with real-time logging and progress tracking
+- **Web GUI (TVARITA)** — Clean, modern Flask-based browser interface with real-time logging and progress tracking
 - **Performance Metrics** — Measures encryption time, key exchange time, transfer speed, and file sizes
 - **Integrity Verification** — Validates that decrypted file matches the original size
 - **LAN Support** — Works on both localhost and across local network
@@ -39,7 +39,7 @@ A secure file sharing application built entirely from scratch in Python. This pr
 ```
 ┌─────────────────────────────────────────────────────┐
 │              app.py (Web GUI Layer — Flask)           │
-│         CloudDrop UI — Browser-based Interface        │
+│         TVARITA UI — Browser-based Interface        │
 │  ┌──────────────┐  ┌──────────────┐  ┌───────────┐  │
 │  │  Transfer    │  │   Receive    │  │    Log    │  │
 │  │  (Send File) │  │ (Get File)   │  │  Metrics  │  │
@@ -75,7 +75,7 @@ A secure file sharing application built entirely from scratch in Python. This pr
 | Encryption | DES (implemented from scratch) |
 | Key Exchange | Diffie-Hellman (implemented from scratch) |
 | Networking | Python `socket` (TCP) |
-| GUI | Flask (web-based, CloudDrop design with Manrope font) |
+| GUI | Flask (web-based, TVARITA design with Manrope font) |
 | Hashing | SHA-256 (for DES key derivation) |
 
 ---
@@ -84,7 +84,7 @@ A secure file sharing application built entirely from scratch in Python. This pr
 
 ```
 CNS Final Project/
-├── app.py              # Flask web GUI (CloudDrop design)
+├── app.py              # Flask web GUI (TVARITA design)
 ├── test_e2e.py         # End-to-end integration tests
 ├── des.py              # Full DES algorithm from scratch
 ├── diffie_hellman.py   # Diffie-Hellman key exchange
@@ -217,12 +217,12 @@ Complete DES implementation with:
 | **Timeout** | 60-second socket timeout |
 | **Threading** | Non-blocking operations for GUI responsiveness |
 
-### `app.py` — Flask Web GUI (CloudDrop Design)
+### `app.py` — Flask Web GUI (TVARITA Design)
 
 | Component | Description |
 |-----------|------------|
 | **Framework** | Flask with inline HTML/CSS/JS |
-| **Design** | CloudDrop — Manrope font, light theme, blue accent (#0066FF) |
+| **Design** | TVARITA — Manrope font, light theme, blue accent (#0066FF) |
 | **Tabs** | Transfer (send) / Receive / Log — tab-based navigation |
 | **File Upload** | Browser file picker with drag-drop styled zone |
 | **IP Display** | Shows host IP prominently for easy sharing |
