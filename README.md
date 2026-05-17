@@ -85,10 +85,12 @@ A secure file sharing application built entirely from scratch in Python. This pr
 ```
 CNS Final Project/
 ├── app.py              # Flask web GUI (TVARITA design)
-├── test_e2e.py         # End-to-end integration tests
+├── templates/
+│   └── index.html      # Frontend user interface
 ├── des.py              # Full DES algorithm from scratch
 ├── diffie_hellman.py   # Diffie-Hellman key exchange
 ├── network.py          # TCP socket networking (Host/Client)
+├── project_report.txt  # Formal academic project report
 └── README.md           # This file
 ```
 
@@ -150,21 +152,20 @@ cd "CNS Final Project"
 python3 app.py
 ```
 
-### Sending a File (Transfer Tab)
+### Sending a File (From PC)
 
-1. Open `http://localhost:8080` in your browser
+1. Open `http://localhost:8080` on your PC browser
 2. Stay on the **Transfer** tab
 3. Click the file drop zone and select a file
-4. Note the displayed **IP address** — share it with the receiver
-5. Click **"Start transfer"** — the server will start listening
+4. Note the displayed **IP address** — share it with mobile devices on the network
+5. Click **"Start transfer"** — the server will encrypt the file
 
-### Receiving a File (Receive Tab)
+### Receiving a File (From Mobile)
 
-1. Open a **second terminal** and run `python3 app.py` (on a different port if same machine)
-2. Click the **Receive** tab
-3. Enter the host's **IP address** and **port**
-4. Click **"Start Transfer"** to connect and receive
-5. File is saved to `~/Downloads` with a confirmation popup
+1. Open the PC's IP address (e.g., `http://10.146.225.5:8080`) on your mobile browser
+2. Tap the **Receive** tab
+3. Tap **"Start Receive"**
+4. Once the DES decryption is complete, tap the **"Download to Device"** button to save the file!
 
 ### Self-Tests
 
@@ -217,19 +218,18 @@ Complete DES implementation with:
 | **Timeout** | 60-second socket timeout |
 | **Threading** | Non-blocking operations for GUI responsiveness |
 
-### `app.py` — Flask Web GUI (TVARITA Design)
+### `app.py` & `templates/index.html` — Flask Web GUI
 
 | Component | Description |
 |-----------|------------|
-| **Framework** | Flask with inline HTML/CSS/JS |
-| **Design** | TVARITA — Manrope font, light theme, blue accent (#0066FF) |
-| **Tabs** | Transfer (send) / Receive / Log — tab-based navigation |
-| **File Upload** | Browser file picker with drag-drop styled zone |
-| **IP Display** | Shows host IP prominently for easy sharing |
+| **Framework** | Flask with centralized backend processing |
+| **Design** | TVARITA — Premium responsive mobile UI with CSS shadows |
+| **Tabs** | Transfer (send) / Receive / Log / History |
+| **Download** | Dynamic HTTP file serving via `/download/<filename>` |
+| **Architecture**| Loopback TCP routing (both Host and Client threads run on backend) |
 | **Progress** | Real-time progress bar via API polling (500ms) |
 | **Log** | Color-coded, timestamped activity log |
 | **Metrics** | Encryption time, transfer speed, file sizes |
-| **Confirmation** | Success message with file details on completion |
 
 ### `test_e2e.py` — Integration Tests
 
@@ -287,9 +287,9 @@ The application automatically measures and displays:
 
 ---
 
-## 👨‍💻 Author
+## 👨‍💻 Authors
 
-**Aniket**
+**Vishnu Jha & Aniket**
 
 Project: Secure File Sharing System using DES and Diffie-Hellman
 Course: Cryptography and Network Security (CNS) — Final Project
