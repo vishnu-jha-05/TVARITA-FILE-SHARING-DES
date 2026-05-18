@@ -9,7 +9,6 @@ Implements the complete DES algorithm including:
 - Expansion (E), Permutation (P), PC-1, PC-2
 - ECB Mode with PKCS5 Padding
 
-Author: Aniket
 Project: Secure File Sharing System using DES and Diffie-Hellman
 """
 

@@ -1,7 +1,5 @@
 """
 Secure File Sharing System — Web GUI (TVARITA Design)
-Uses Flask to serve a browser-based UI matching the Stitch design.
-Author: Aniket
 """
 import os, sys, json, time, threading, socket
 from flask import Flask, render_template, request, jsonify
@@ -31,10 +29,25 @@ lock = threading.Lock()
 TMP_DIR = os.path.join(os.path.expanduser('~'), '.tvarita_tmp')
 os.makedirs(TMP_DIR, exist_ok=True)
 
-try:
-    LOCAL_IP = socket.gethostbyname(socket.gethostname())
-except:
-    LOCAL_IP = "127.0.0.1"
+def _get_local_ip():
+    """
+    Reliably detect the correct local IP address of this machine.
+    
+    Uses a UDP socket trick: by 'connecting' to an external address (8.8.8.8),
+    the OS is forced to select the correct active network interface (e.g. Wi-Fi or Hotspot).
+    No actual data is sent — it just asks the OS which interface it would use.
+    This avoids the common bug of gethostbyname() returning a VirtualBox/Ethernet IP.
+    """
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))  # Connect to Google DNS (no data is sent)
+        ip = s.getsockname()[0]     # Read which local interface the OS chose
+        s.close()
+        return ip
+    except:
+        return "127.0.0.1"
+
+LOCAL_IP = _get_local_ip()
 
 def add_log(target_state, msg, tag='info'):
     with lock:
@@ -44,9 +57,33 @@ def set_progress(target_state, cur, tot):
     with lock:
         target_state['progress'] = int(cur / tot * 100) if tot else 0
 
+@app.after_request
+def add_no_cache_headers(response):
+    """
+    Prevent browsers from caching any page.
+    This ensures the phone always gets a fresh page with the correct IP address,
+    even if the hotspot assigns a new IP after reconnecting.
+    """
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
 @app.route('/')
 def index():
-    return render_template('index.html', LOCAL_IP=LOCAL_IP)
+    """
+    Serve the main TVARITA interface.
+    
+    We detect the IP dynamically from the HTTP request host header.
+    This way, when the PC opens localhost:8080, it shows the LOCAL_IP for the phone.
+    When the phone opens 10.146.225.5:8080, the page confirms that exact IP back.
+    This is 100% reliable regardless of how many network adapters the PC has.
+    """
+    host = request.host.split(':')[0]  # Strip the port number (e.g. "10.146.225.5:8080" -> "10.146.225.5")
+    # If accessed from the PC itself (localhost), show the detected network IP for phone to connect
+    # If accessed from phone with actual IP, confirm that same IP back to the user
+    display_ip = LOCAL_IP if host in ('localhost', '127.0.0.1') else host
+    return render_template('index.html', LOCAL_IP=display_ip)
 
 
 @app.route('/api/status')
@@ -313,8 +350,41 @@ def _client_thread(ip, port, save_dir):
 
 if __name__ == '__main__':
     os.environ['TK_SILENCE_DEPRECATION'] = '1'
+
+    # ── Auto-kill any old server still running on port 8080 ──
+    # This prevents the "Address already in use" error and stale IP display bug.
+    import subprocess
+    try:
+        result = subprocess.run(
+            ['netstat', '-ano'], capture_output=True, text=True, timeout=5
+        )
+        for line in result.stdout.splitlines():
+            if ':8080' in line and 'LISTENING' in line:
+                parts = line.split()
+                old_pid = parts[-1]
+                if old_pid.isdigit() and int(old_pid) != os.getpid():
+                    subprocess.run(['taskkill', '/PID', old_pid, '/F'],
+                                   capture_output=True, timeout=5)
+                    print(f"  [!] Killed old server process (PID {old_pid})")
+                    time.sleep(1)  # Give the port time to release
+    except:
+        pass  # If cleanup fails, Flask will report the port conflict normally
+
+    # Recalculate IP fresh (in case network changed since module loaded)
+    LOCAL_IP = _get_local_ip()
+
     threading.Thread(target=udp_listener_thread, daemon=True).start()
     import webbrowser
-    print("\n  [+] TVARITA starting at http://localhost:8080\n")
+
+    print("\n  ╔═══════════════════════════════════════════════╗")
+    print("  ║         TVARITA — Secure File Sharing         ║")
+    print("  ╠═══════════════════════════════════════════════╣")
+    print(f"  ║  PC Browser : http://localhost:8080            ║")
+    print(f"  ║  Phone URL  : http://{LOCAL_IP}:8080  ║")
+    print("  ╚═══════════════════════════════════════════════╝\n")
+    print("  → Open the Phone URL on your mobile browser to connect!")
+    print("  → Press Ctrl+C to stop the server.\n")
+
     webbrowser.open('http://localhost:8080')
     app.run(host='0.0.0.0', port=8080, debug=False)
+

@@ -12,7 +12,6 @@ Steps:
 4. Each party computes the shared secret from the other's public key
 5. The shared secret is used to derive a DES encryption key
 
-Author: Aniket
 Project: Secure File Sharing System using DES and Diffie-Hellman
 """
 

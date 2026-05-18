@@ -7,7 +7,7 @@ Handles all networking for the secure file sharing system:
 - Protocol: Exchange DH public keys, then send/receive encrypted files
 - Threaded design to keep the GUI responsive
 
-Author: Aniket
+
 Project: Secure File Sharing System using DES and Diffie-Hellman
 """
 
