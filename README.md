@@ -258,25 +258,6 @@ The application automatically measures and displays:
 
 ---
 
-## 📸 Screenshots
-
-### Transfer Tab — File Selected & Ready to Send
-> Shows the sender interface with a file chosen, port configured, and host IP displayed for sharing.
-
-![Transfer Tab — File ready to send](screenshots/01_transfer_file_selected.png)
-
-### Receive Tab — Awaiting Connection
-> The receiver interface with host IP, port, and save directory configured, ready to connect.
-
-![Receive Tab — Ready to connect](screenshots/02_receive_tab.png)
-
-### Transfer Log — Completed Transfer
-> Real-time log showing the full pipeline: Diffie-Hellman key exchange → DES encryption → file transfer → confirmation with performance metrics (encryption time, transfer speed, file size).
-
-![Transfer Log — Completed transfer](screenshots/03_transfer_complete.png)
-
----
-
 ## 🔒 Security Considerations
 
 - **DES** is used for educational purposes — modern systems use AES-256
